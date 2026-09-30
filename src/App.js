@@ -1,25 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
-function App() {
+function NewsList() {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchArticles() {
+      try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=10');
+        if (!response.ok) throw new Error('Failed to load articles');
+        const data = await response.json();
+        setArticles(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchArticles();
+  }, []);
+
+  if (loading) return <p className="status">Loading...</p>;
+  if (error) return <p className="status error">{error}</p>;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <h1>News</h1>
+      <ul className="article-list">
+        {articles.map((article) => (
+          <li key={article.id}>
+            <Link to={`/article/${article.id}`}>{article.title}</Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
-export default App;
+export default NewsList;
